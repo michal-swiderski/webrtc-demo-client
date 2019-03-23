@@ -7,7 +7,6 @@ import config from '../rtcconfig';
 class VideoChat extends Component {
     constructor(props){
         super(props);
-        console.log('constructor called');
         this.localVideo = React.createRef();
         this.remoteVideo = React.createRef();
         this.state = {

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import './App.css';
+import './App.sass';
 import {BrowserRouter, Route} from "react-router-dom";
 import LoginPage from "./components/LoginPage";
 import VideoChat from "./components/VideoChat";
@@ -11,7 +11,6 @@ class App extends Component {
                 <div className="App">
                     <Route exact path='/' component={LoginPage}/>
                     <Route path='/room/:room' component={VideoChat}/>
-
                 </div>
             </BrowserRouter>
         );
