@@ -133,7 +133,7 @@ class VideoChat extends Component {
         return (
             <div className='videoChat'>
                 {!this.state.remoteConnected?<h1 className="info">Waiting for someone to connect</h1>:null}
-                <div class="local-video-wrapper">
+                <div className="local-video-wrapper">
                     <video autoPlay muted height={this.state.localVideoHeight} ref={this.localVideo} id='localVideo'/>
                 </div>
                 <video autoPlay muted={this.muted} ref={this.remoteVideo} id='remoteVideo'/>

@@ -11,16 +11,15 @@ class LoginPage extends Component {
     }
 
     handleChange = (e) => {
-        if (e.target.value.length < 5)
-            this.setState({error: 'room id must be at least 5 characters long'});
-        else
-            this.setState({error: ''});
         this.setState({room: e.target.value});
     };
 
     handleSubmit = (e) => {
         e.preventDefault();
-        this.props.history.push('/room/' + this.state.room);
+        if (this.state.room.length < 5)
+            this.setState({error: 'Room id must be at least 5 characters long'});
+        else
+            this.props.history.push('/room/' + this.state.room);
     };
 
     componentWillMount() {
@@ -41,7 +40,7 @@ class LoginPage extends Component {
                             <div className="six columns offset-by-three">
                                 <input type="text" placeholder="Room" className="u-full-width"
                                        onChange={this.handleChange} value={this.state.room}/>
-                                <span id="error">{this.state.error}</span>
+                                <p id="error">{this.state.error}</p>
                                 <input className="button-primary u-full-width" type="submit" value="Join"/>
                             </div>
                         </div>
