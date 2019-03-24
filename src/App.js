@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import './App.sass';
+import './styles/App.sass';
 import {BrowserRouter, Route} from "react-router-dom";
 import LoginPage from "./components/LoginPage";
 import VideoChat from "./components/VideoChat";

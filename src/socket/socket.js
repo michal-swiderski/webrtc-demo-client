@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 
-const socket = io("localhost:8080");
+const socket = io(process.env.REACT_APP_WEBSOCKET_URL);
 
 export function subscribe(event, callback){
   socket.on(event, callback);

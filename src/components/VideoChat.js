@@ -32,10 +32,11 @@ class VideoChat extends Component {
                        console.log('sent candidate');
                    }
                };
-               this.localVideo.current.srcObject = this.test;
 
-               this.test.getTracks().forEach((track)=>{
-                   this.connection.addTrack(track, this.test);
+               this.localVideo.current.srcObject = this.localStream;
+
+               this.localStream.getTracks().forEach((track)=>{
+                   this.connection.addTrack(track, this.localStream);
                });
                console.log('added stream');
            }
@@ -86,12 +87,11 @@ class VideoChat extends Component {
 
     componentDidMount(){
         navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then( (localStream) =>{
-            this.test = localStream;
+            this.localStream = localStream;
             emit('login', {
                 room : this.props.match.params.room
             });
         });
-        // document.body.addEventListener('mousemove', this.showControls);
     }
 
     componentWillUnmount() {
@@ -101,28 +101,19 @@ class VideoChat extends Component {
         unsubscribe('answer');
         unsubscribe('candidate');
         unsubscribe('peerdisconnected');
-        // document.body.removeEventListener('mousemove', this.showControls);
+        emit('hangup');
+        this.connection.close();;
     }
 
-    // timeout = 0;
-    // showControls = () => {
-    //     clearTimeout(this.timeout);
-    //     this.setState({controlsHidden : false});
-    //     this.timeout = setTimeout(()=>{
-    //         this.setState({controlsHidden : true});
-    //     }, 5000);
-    // };
-
     toggleMic = () => {
-        this.test.getAudioTracks()[0].enabled = !this.test.getAudioTracks()[0].enabled;
+        this.localStream.getAudioTracks()[0].enabled = !this.localStream.getAudioTracks()[0].enabled;
     };
 
     toggleVideo = () => {
-        this.test.getVideoTracks()[0].enabled = !this.test.getVideoTracks()[0].enabled;
+        this.localStream.getVideoTracks()[0].enabled = !this.localStream.getVideoTracks()[0].enabled;
     };
 
     hangup = () => {
-        this.connection.close();
         this.props.history.push('/');
     };
 
