@@ -6,7 +6,8 @@ class LoginPage extends Component {
         super(props);
         this.state = {
             room: null,
-            error: ''
+            error: '',
+            recentRooms: []
         };
     }
 
@@ -18,8 +19,10 @@ class LoginPage extends Component {
         e.preventDefault();
         if (this.state.room.length < 5)
             this.setState({error: 'Room id must be at least 5 characters long'});
-        else
+        else {
+            localStorage.setItem('recentRooms', JSON.stringify([this.state.room, ...this.state.recentRooms.slice(0, 4)]));
             this.props.history.push('/room/' + this.state.room);
+        }
     };
 
     componentWillMount() {
@@ -28,23 +31,40 @@ class LoginPage extends Component {
         for (let i = 0; i < 10; i++)
             id += chars[Math.floor(Math.random() * chars.length)];
         this.setState({room: id});
+        if (localStorage) {
+            if (localStorage.getItem('recentRooms') !== null) {
+                let recentRooms = JSON.parse(localStorage.getItem('recentRooms'));
+                this.setState({recentRooms});
+            } else {
+                localStorage.setItem('recentRooms', JSON.stringify([]));
+                this.setState({recentRooms: []});
+            }
+        }
     }
 
     render() {
+        const recentRoomsList = this.state.recentRooms.map((room) => {
+            return (<li><a href={'/room/' + room}>{room}</a></li>);
+        });
         return (
             <div>
                 <div id="login-wrapper" className="container">
                     <h1 className="title">WebRTC demo app</h1>
-                    <form onSubmit={this.handleSubmit}>
-                        <div className="row">
-                            <div className="six columns offset-by-three">
+                    <div className="row">
+                        <div className="six columns offset-by-three">
+                            <form onSubmit={this.handleSubmit}>
                                 <input type="text" placeholder="Room" className="u-full-width"
                                        onChange={this.handleChange} value={this.state.room}/>
                                 <p id="error">{this.state.error}</p>
                                 <input className="button-primary u-full-width" type="submit" value="Join"/>
-                            </div>
+                            </form>
+                            <h2>Recent rooms: </h2>
+                            <ul className="recent-rooms-list">
+                                {recentRoomsList}
+                            </ul>
                         </div>
-                    </form>
+                    </div>
+
                 </div>
             </div>
         );

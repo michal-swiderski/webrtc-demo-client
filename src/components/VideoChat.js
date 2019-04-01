@@ -5,79 +5,82 @@ import {subscribe, emit, unsubscribe} from '../socket/socket.js'
 import config from '../rtcconfig';
 
 class VideoChat extends Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         this.localVideo = React.createRef();
         this.remoteVideo = React.createRef();
         this.state = {
-            localVideoHeight : 200,
-            isRemoteVideoMuted : false,
-            remoteConnected : false,
-            controlsHidden : false
+            localVideoHeight: 200,
+            isRemoteVideoMuted: false,
+            remoteConnected: false,
+            controlsHidden: false
         };
-        subscribe('login', (data)=>{
+        subscribe('login', (data) => {
             console.log('logged in');
-           if(!data.success){
-               this.props.history.push('/?error=full');
-           }
-           else{
-               this.connection = new RTCPeerConnection(config);
-               this.connection.ontrack = (e)=>{
-                   console.log('got stream');
-                   this.remoteVideo.current.srcObject = e.streams[0];
-               };
-               this.connection.onicecandidate = (e) => {
-                   if(e.candidate){
-                       emit('candidate', {candidate: e.candidate});
-                       console.log('sent candidate');
-                   }
-               };
-
-               this.localVideo.current.srcObject = this.localStream;
-
-               this.localStream.getTracks().forEach((track)=>{
-                   this.connection.addTrack(track, this.localStream);
-               });
-               console.log('added stream');
-           }
+            if (!data.success) {
+                this.props.history.push('/');
+            } else {
+                this.connection = new RTCPeerConnection(config);
+                this.connection.ontrack = (e) => {
+                    console.log('got stream');
+                    this.remoteVideo.current.srcObject = e.streams[0];
+                };
+                this.connection.onicecandidate = (e) => {
+                    if (e.candidate) {
+                        emit('candidate', {candidate: e.candidate});
+                        console.log('sent candidate');
+                    }
+                };
+                this.localVideo.current.srcObject = this.localStream;
+                this.localStream.getTracks().forEach((track) => {
+                    this.connection.addTrack(track, this.localStream);
+                });
+                console.log('added stream');
+            }
         });
 
-        subscribe('joined', (data)=>{
+        subscribe('joined', (data) => {
             console.log('joined');
             this.setState({remoteConnected: true});
             //prepare an offer
-            this.connection.createOffer((offer)=>{
+            this.connection.createOffer((offer) => {
                 console.log('sending an offer');
                 emit('offer', {offer});
-                this.connection.setLocalDescription(offer).catch((e)=>{console.log(e)});
-            }, (error)=>{console.log(error)});
+                this.connection.setLocalDescription(offer).catch((e) => {
+                    console.log(e)
+                });
+            }, (error) => {
+                console.log(error)
+            });
         });
 
-        subscribe('offer', (data)=>{
+        subscribe('offer', (data) => {
             console.log('recieved an offer');
             this.connection.setRemoteDescription(data.offer);
 
-            this.connection.createAnswer((answer)=>{
+            this.connection.createAnswer((answer) => {
                 this.connection.setLocalDescription(answer);
                 emit('answer', {answer});
                 console.log('sent answer');
                 this.setState({remoteConnected: true});
-            }, (error) => {console.log(error)});
+            }, (error) => {
+                console.log(error)
+            });
         });
 
-        subscribe('answer', (data)=>{
+        subscribe('answer', (data) => {
             console.log('recieved answer');
             this.connection.setRemoteDescription(new RTCSessionDescription(data.answer));
         });
 
-        subscribe('candidate', (data)=>{
+        subscribe('candidate', (data) => {
             console.log('recieved candidate');
             console.log(data.candidate);
             this.connection.addIceCandidate(new RTCIceCandidate(data.candidate));
         });
 
-        subscribe('peerdisconnected', ()=>{
-            this.setState({remoteConnected : false});
+        subscribe('peerdisconnected', () => {
+            this.setState({remoteConnected: false});
             this.remoteVideo.current.srcObject = null;
             // this.connection.close();
             // this.connection.onicecandidate = null;
@@ -85,11 +88,11 @@ class VideoChat extends Component {
         });
     }
 
-    componentDidMount(){
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then( (localStream) =>{
+    componentDidMount() {
+        navigator.mediaDevices.getUserMedia({video: true, audio: true}).then((localStream) => {
             this.localStream = localStream;
             emit('login', {
-                room : this.props.match.params.room
+                room: this.props.match.params.room
             });
         });
     }
@@ -102,7 +105,7 @@ class VideoChat extends Component {
         unsubscribe('candidate');
         unsubscribe('peerdisconnected');
         emit('hangup');
-        this.connection.close();;
+        this.connection.close();
     }
 
     toggleMic = () => {
@@ -118,13 +121,13 @@ class VideoChat extends Component {
     };
 
     toggleFullscreen = () => {
-        if(!this.state.isFullscreen)
-            document.body.requestFullscreen().then(()=>{
-                this.setState({isFullscreen : true});
+        if (!this.state.isFullscreen)
+            document.body.requestFullscreen().then(() => {
+                this.setState({isFullscreen: true});
             });
-        else{
-            document.exitFullscreen().then(()=>{
-                this.setState({isFullscreen : false});
+        else {
+            document.exitFullscreen().then(() => {
+                this.setState({isFullscreen: false});
             });
         }
     };
@@ -132,12 +135,14 @@ class VideoChat extends Component {
     render() {
         return (
             <div className='videoChat'>
-                {!this.state.remoteConnected?<h1 className="info">Waiting for someone to connect</h1>:null}
+                {!this.state.remoteConnected ? <h1 className="info">Waiting for someone to connect</h1> : null}
                 <div className="local-video-wrapper">
                     <video autoPlay muted height={this.state.localVideoHeight} ref={this.localVideo} id='localVideo'/>
                 </div>
                 <video autoPlay muted={this.muted} ref={this.remoteVideo} id='remoteVideo'/>
-                <VideoChatControls hidden={this.state.controlsHidden} toggleMic={this.toggleMic} toggleVideo={this.toggleVideo} hangup={this.hangup} toggleFullscreen = {this.toggleFullscreen}/>
+                <VideoChatControls hidden={this.state.controlsHidden} toggleMic={this.toggleMic}
+                                   toggleVideo={this.toggleVideo} hangup={this.hangup}
+                                   toggleFullscreen={this.toggleFullscreen}/>
             </div>
         );
     }
